@@ -1,2 +1,2 @@
 SELECT DISTINCT productname FROM products
-ORDER BY productname;
+ORDER BY productname DESC;

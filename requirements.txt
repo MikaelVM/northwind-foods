@@ -9,3 +9,10 @@ flake8_import_order==0.19.2
 # PostgreSQL database adapter for Python
 psycopg2-binary
 sqlalchemy
+
+# Data Manipulation and Visualization
+pandas
+matplotlib
+
+# Testing
+pytest
