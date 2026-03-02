@@ -1,0 +1,3 @@
+-- This file is used to initialize any extensions that could be required by other SQL files in this directory.
+-- Example:
+-- CREATE EXTENSION IF NOT EXISTS "PostGIS";

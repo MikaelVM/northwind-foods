@@ -1,0 +1,1 @@
+SELECT DISTINCT shipcountry FROM orders;

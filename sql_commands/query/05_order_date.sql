@@ -1,0 +1,1 @@
+SELECT * FROM orders WHERE orderdate BETWEEN '1996-10-01' AND '1996-10-31';
