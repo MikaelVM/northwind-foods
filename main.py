@@ -73,5 +73,3 @@ if __name__ == "__main__":
     )
 
     # Exercise 6: CRUD operations on a new separate table
-    # TODO: Create a new table that is a merge of employeeterritories, territories and region, as the last 2 tables are
-    #       redundant. Then, perform CRUD operations on the new table and demonstrate the changes in the database.
