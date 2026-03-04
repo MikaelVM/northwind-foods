@@ -58,9 +58,8 @@ class SQLRunner(ABC):
         pass
 
     @abstractmethod
-    def execute_query(self, query: str | Path) -> bool:
-        """Run a SQL query that does not return any results (e.g., CREATE, UPDATE, DELETE) and return whether the
-        query was executed successfully.
+    def run_query(self, query: str | Path) -> bool:
+        """Run a SQL query against the database and return whether the query was executed successfully.
 
         Args:
             query (str|Path): A SQL query as a string or a Path to a file containing the SQL query.
@@ -111,19 +110,18 @@ class SQLRunner(ABC):
                 return file.read()
 
 
-class BasePostgresSQLRunner(SQLRunner):
-    """Base class for running SQL queries against a PostgreSQL database."""
+class BasePostgresSQLRunner(SQLRunner, ABC):
+    """Base class for running SQL queries against a PostgreSQL database.
+
+    This class is not meant to be used directly, but rather to be inherited by concrete implementations that use
+     specific libraries (e.g., SQLAlchemy, psycopg3) to run SQL queries against a PostgreSQL database.
+    """
 
     def __init__(self, config_file: Path, warnings: bool = True):
-        """Initialize the SQLRunner.
-
-        Args:
-            config_file (Path): Path to the configuration file containing database connection details.
-            warnings (bool): Whether to print warnings if the query does not return any results or if an error occurs
-             while fetching results (default: True).
-        """
+        """Initialize the SQLRunner."""
         super().__init__(config_file, warnings)
-        self.connection_string = self.__get_connection_string(config_file)
+        self.connection_string = self.__get_connection_string(self.config_file)
+
 
     @staticmethod
     def __get_connection_string( config_file: Path) -> str:
@@ -148,17 +146,13 @@ class BasePostgresSQLRunner(SQLRunner):
         return f'postgresql://{user}:{password}@{host}:{port}/{database}'
 
 
-class SQLAlchemySQLRunner(SQLRunner):
+class SQLAlchemySQLRunner(BasePostgresSQLRunner):
     """Class for running SQL queries against a given database engine using the SQLAlchemy library."""
 
-    def __init__(self, config_file: Path):
-        """Initialize the SQLRunner with a SQLAlchemy engine.
-
-        Args:
-            config_file (Path): Path to the configuration file containing database connection details.
-        """
-        super().__init__(config_file)
-        self.Session = sessionmaker(bind=_get_engine(self.config_file))
+    def __init__(self, config_file: Path, warnings: bool = True):
+        """Initialize the SQLRunner with a SQLAlchemy engine."""
+        super().__init__(config_file, warnings)
+        self.Session = sessionmaker(bind=create_engine(self.connection_string))
 
     def get_list_from_query(self, query: str | Path) -> List[List[Any]]:
         """Run a SQL query and return the results.
@@ -205,7 +199,7 @@ class SQLAlchemySQLRunner(SQLRunner):
 
         return self._execute_query(query)
 
-    def execute_query(self, query: str | Path) -> bool:
+    def run_query(self, query: str | Path) -> bool:
         """Run a SQL query that does not return any results (e.g., CREATE, UPDATE, DELETE) and return whether the
         query was executed successfully.
 
@@ -234,13 +228,23 @@ class SQLAlchemySQLRunner(SQLRunner):
             result = session.execute(text(self._get_string_from_query(query)))
             return result
 
+    def _get_engine(self, config_file: Path) -> Engine:
+        """Create a SQLAlchemy engine based on the configuration file.
 
-class Psycopg3SQLRunner(SQLRunner):
+        Args:
+            config_file (Path): Path to the configuration file containing database connection details.
+        """
+        connection_string = self.connection_string
+
+        return create_engine(connection_string)
+
+
+class Psycopg3SQLRunner(BasePostgresSQLRunner):
     """Class for running SQL queries against a given database engine using the SQLAlchemy library."""
 
-    def __init__(self, ):
+    def __init__(self, config_file: Path, warnings: bool = True):
         """Initialize the SQLRunner with a psycopg3 connection string."""
-        super().__init__()
+        super().__init__(config_file, warnings)
 
     def get_list_from_query(self, query: str | Path) -> list[list[Any]]:
         """Run a SQL query and return the results.
@@ -290,14 +294,3 @@ class Psycopg3SQLRunner(SQLRunner):
         cur = conn.cursor()
         cur.execute(query)
         return cur
-
-
-def _get_engine(config_file: Path) -> Engine:
-    """Create a SQLAlchemy engine based on the configuration file.
-
-    Args:
-        config_file (Path): Path to the configuration file containing database connection details.
-    """
-    connection_string = self.connection_string(config_file)
-
-    return create_engine(connection_string)
