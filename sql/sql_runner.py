@@ -19,12 +19,22 @@ class SQLRunner:
         self.engine = engine
         self.Session = sessionmaker(bind=self.engine)
 
-    def run_query(self, query: str) -> Result[Any]:
+    def run_query(self, query: str|Path) -> Result[Any]:
         """Run a SQL query and return the results.
 
         Args:
-            query (str): The SQL query to be executed.
+            query (str|Path): A SQL query as a string or a Path to a file containing the SQL query.
+
+        Exceptions:
+            FileNotFoundError: If the query is provided as a Path and the file does not exist.
         """
+        if isinstance(query, Path):
+            if not query.exists():
+                raise FileNotFoundError(f"Query file '{query}' not found.")
+            else:
+                with open(query, 'r') as file:
+                    query = file.read()
+
         with self.Session() as session:
             result = session.execute(text(query))
             return result
@@ -37,13 +47,8 @@ def get_engine(config_file: Path) -> Engine:
         config_file (Path): Path to the configuration file containing database connection details.
     """
     connection_string = _get_connection_string(config_file)
-    keep_alive_args = {
-        'keepalives': 1,
-        'keepalives_idle': 30,
-        'keepalives_interval': 10,
-        'keepalives_count': 5
-    }
-    return create_engine(connection_string, pool_pre_ping=True, connect_args=keep_alive_args)
+
+    return create_engine(connection_string)
 
 
 def _get_connection_string(config_file: Path) -> str:
