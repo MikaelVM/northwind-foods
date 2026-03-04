@@ -3,12 +3,12 @@ from pathlib import Path
 
 import pandas as pd
 from figures import bar_plot
-from sql import SQLAlchemySQLRunner
+from sql import SQLAlchemyQueryRunner
 
 
 if __name__ == "__main__":
     config_file = Path('./db_config.ini')
-    sqlalchemy_runner = SQLAlchemySQLRunner(config_file)
+    sqlalchemy_runner = SQLAlchemyQueryRunner(config_file)
 
     # Exercise 2: Fundamental data extraction using SQL queries
     for file in Path('sql_query/exercise2').glob('*.sql'):
