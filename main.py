@@ -1,12 +1,32 @@
 """Scripts that demonstrates the completion of a set of exercises related to SQL and database management."""
 from pathlib import Path
 
-from sql import SQLRunner, get_engine
-import pandas as pd
 import matplotlib.pyplot as plt
+import pandas as pd
+from sql import SQLRunner, get_engine
 
-def bar_plot(dataframe: pd.DataFrame, *, x_col: str, y_col: str, title: str, x_label: str, y_label: str, save_path: Path) -> None:
-    """Create a bar plot from a DataFrame and save it to a file."""
+
+def bar_plot(
+        dataframe: pd.DataFrame,
+        *,
+        x_col: str,
+        y_col: str,
+        title: str,
+        x_label: str,
+        y_label: str,
+        save_path: Path
+) -> None:
+    """Create a bar plot from a DataFrame and save it to a file.
+
+    Args:
+        dataframe (pd.DataFrame): The DataFrame containing the data to plot.
+        x_col (str): The name of the column to use for the x-axis.
+        y_col (str): The name of the column to use for the y-axis.
+        title (str): The title of the plot.
+        x_label (str): The label for the x-axis.
+        y_label (str): The label for the y-axis.
+        save_path (Path): The path where the plot image will be saved.
+    """
     plt.figure().set_size_inches(10, 6)
     plt.bar(dataframe[x_col], dataframe[y_col])
     plt.title(title)
@@ -15,6 +35,7 @@ def bar_plot(dataframe: pd.DataFrame, *, x_col: str, y_col: str, title: str, x_l
     plt.xticks(rotation=50)
     plt.savefig(save_path, format='png')
     plt.close()
+
 
 if __name__ == "__main__":
     config_file = Path('./db_config.ini')
@@ -27,7 +48,7 @@ if __name__ == "__main__":
 
         for row in result:
             print(row)
-        print('-'*200)
+        print('-' * 200)
 
     # Exercise 4: Testing the connection and running a simple query
     query = "SELECT * FROM products LIMIT 5;"

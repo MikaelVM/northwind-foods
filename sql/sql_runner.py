@@ -19,13 +19,13 @@ class SQLRunner:
         self.engine = engine
         self.Session = sessionmaker(bind=self.engine)
 
-    def run_query(self, query: str|Path) -> Result[Any]:
+    def run_query(self, query: str | Path) -> Result[Any]:
         """Run a SQL query and return the results.
 
         Args:
             query (str|Path): A SQL query as a string or a Path to a file containing the SQL query.
 
-        Exceptions:
+        Raises:
             FileNotFoundError: If the query is provided as a Path and the file does not exist.
         """
         if isinstance(query, Path):
