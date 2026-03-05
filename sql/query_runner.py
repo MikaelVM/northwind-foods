@@ -17,40 +17,38 @@ from typing import Any, List
 
 import psycopg
 from pandas import DataFrame
-from sqlalchemy import Engine, Result, create_engine, text
+from sqlalchemy import Result, create_engine, text
 from sqlalchemy.orm import sessionmaker
 
 
 class QueryRunner(ABC):
-    """Base class for running SQL queries against a database."""
+    """Base class for running queries against a database."""
 
     @abstractmethod
-    def __init__(self, config_file: Path, warnings: bool = True):
-        """Initialize the SQLRunner.
+    def __init__(self, warnings: bool = True):
+        """Initialize the QueryRunner.
 
         Args:
-            config_file (Path): Path to the configuration file containing database connection details.
             warnings (bool): Whether to print warnings if the query does not return any results or if an error occurs
              while fetching results (default: True).
         """
         self.warnings = warnings
-        self.config_file = config_file
 
     @abstractmethod
     def get_list_from_query(self, query: str | Path) -> List[List[Any]]:
-        """Run a SQL query and return the results as a list of lists (inner list represents a row of the result).
+        """Run a query and return the results as a list of lists (inner list represents a row of the result).
 
         Args:
-            query (str|Path): A SQL query as a string or a Path to a file containing the SQL query.
+            query (str|Path): A query as a string or a Path to a file containing the query.
         """
         pass
 
     @abstractmethod
     def get_dataframe_from_query(self, query: str | Path) -> DataFrame | None:
-        """Run a SQL query and return the results as a pandas DataFrame (with column names as DataFrame columns).
+        """Run a query and return the results as a pandas DataFrame (with column names as DataFrame columns).
 
         Args:
-            query (str|Path): A SQL query as a string or a Path to a file containing the SQL query.
+            query (str|Path): A query as a string or a Path to a file containing the query.
 
         Result:
             DataFrame: The results of the query as a pandas DataFrame.
@@ -59,10 +57,10 @@ class QueryRunner(ABC):
 
     @abstractmethod
     def run_query(self, query: str | Path) -> bool:
-        """Run a SQL query against the database and return whether the query was executed successfully.
+        """Run a query against the database and return whether the query was executed successfully.
 
         Args:
-            query (str|Path): A SQL query as a string or a Path to a file containing the SQL query.
+            query (str|Path): A query as a string or a Path to a file containing the query.
 
         Result:
             bool: True if the query was executed successfully, False otherwise.
@@ -82,17 +80,17 @@ class QueryRunner(ABC):
                   f"results? \nError details: {error}")
 
     def _get_string_from_query(self, query: str | Path) -> str:
-        """Take a SQL query as a string or a Path to a file containing a SQL query and returns the query as a string.
+        """Take a query as a string or a Path to a file containing a query and returns the query as a string.
 
         Args:
-            query (str|Path): A SQL query as a string or a Path to a file containing the SQL query.
+            query (str|Path): A query as a string or a Path to a file containing the query.
         """
         if isinstance(query, Path):
             return self._query_path_to_string(query)
         elif isinstance(query, str):
             return query
         else:
-            raise ValueError("Query must be a string or a Path to a file containing the SQL query.")
+            raise ValueError("Query must be a string or a Path to a file containing the query.")
 
     @staticmethod
     def _query_path_to_string(query_path: Path) -> str:
@@ -111,7 +109,7 @@ class QueryRunner(ABC):
                 return file.read()
 
 
-class BasePostgresQueryRunner(QueryRunner, ABC):
+class PostgresSQLQueryRunner(QueryRunner, ABC):
     """Base class for running SQL queries against a PostgreSQL database.
 
     This class is not meant to be used directly, but rather to be inherited by concrete implementations that use
@@ -126,7 +124,8 @@ class BasePostgresQueryRunner(QueryRunner, ABC):
             warnings (bool): Whether to print warnings if the query does not return any results or if an error occurs
              while fetching results (default: True).
         """
-        super().__init__(config_file, warnings)
+        super().__init__(warnings)
+        self.config_file = config_file
         self.connection_string = self.__get_connection_string(self.config_file)
 
     @staticmethod
@@ -163,7 +162,7 @@ class BasePostgresQueryRunner(QueryRunner, ABC):
         return f'postgresql://{user}:{password}@{host}:{port}/{database}'
 
 
-class SQLAlchemyQueryRunner(BasePostgresQueryRunner):
+class SQLAlchemyQueryRunner(PostgresSQLQueryRunner):
     """Class for running SQL queries against a given database engine using the SQLAlchemy library."""
 
     def __init__(self, config_file: Path, warnings: bool = True):
@@ -231,7 +230,9 @@ class SQLAlchemyQueryRunner(BasePostgresQueryRunner):
         query = self._query_path_to_string(query) if isinstance(query, Path) else query
 
         try:
-            self._execute_query(query)
+            with self.Session() as session:
+                session.execute(text(self._get_string_from_query(query)))
+                session.commit()
             return True
         except Exception as e:
             self._print_warning(e)
@@ -245,20 +246,11 @@ class SQLAlchemyQueryRunner(BasePostgresQueryRunner):
         """
         with self.Session() as session:
             result = session.execute(text(self._get_string_from_query(query)))
+            session.commit()
             return result
 
-    def _get_engine(self, config_file: Path) -> Engine:
-        """Create a SQLAlchemy engine based on the configuration file.
 
-        Args:
-            config_file (Path): Path to the configuration file containing database connection details.
-        """
-        connection_string = self.connection_string
-
-        return create_engine(connection_string)
-
-
-class Psycopg3QueryRunner(BasePostgresQueryRunner):
+class Psycopg3QueryRunner(PostgresSQLQueryRunner):
     """Class for running SQL queries against a given database engine using the SQLAlchemy library."""
 
     def __init__(self, config_file: Path, warnings: bool = True):
@@ -303,24 +295,3 @@ class Psycopg3QueryRunner(BasePostgresQueryRunner):
                 except Exception as e:
                     self._print_warning(e)
                     return None
-
-    # TODO: Verify whether user can close the connection after using the cursor returned by this method, and whether
-    #  the connection is properly closed after the query is executed, even if an error occurs.
-    def get_cursor_from_query(self, query: str | Path) -> psycopg.Cursor:
-        """Run a SQL query and return the raw cursor object from psycopg3.
-
-        NOTE:
-            This method is specifically for Psycopg3 and is not part of the abstract base class, as it is not
-            applicable to other libraries.
-            Should be used with a context manager to ensure that the connection is properly closed after the query is
-            executed, even if an error occurs.
-
-        Args:
-            query (str|Path): A SQL query as a string or a Path to a file containing the SQL query.
-        """
-        query = self._query_path_to_string(query) if isinstance(query, Path) else query
-
-        conn = psycopg.connect(self.connection_string)
-        cur = conn.cursor()
-        cur.execute(query)
-        return cur
