@@ -1,9 +1,8 @@
 """Module for creating and saving bar plots from a DataFrame."""
 from pathlib import Path
-
 import matplotlib.pyplot as plt
-import pandas as pd
 
+import pandas as pd
 
 def bar_plot(
         dataframe: pd.DataFrame,
@@ -13,7 +12,11 @@ def bar_plot(
         title: str,
         x_label: str,
         y_label: str,
-        save_path: Path
+        save_path: Path,
+        save_format: str = 'png',
+        size_width: int = 10,
+        size_height: int = 6,
+        rotation: int = 50
 ) -> None:
     """Create a bar plot from a DataFrame and save it to a file.
 
@@ -26,11 +29,11 @@ def bar_plot(
         y_label (str): The label for the y-axis.
         save_path (Path): The path where the plot image will be saved.
     """
-    plt.figure().set_size_inches(10, 6)
+    plt.figure().set_size_inches(size_width, size_height)
     plt.bar(dataframe[x_col], dataframe[y_col])
     plt.title(title)
     plt.xlabel(x_label)
     plt.ylabel(y_label)
-    plt.xticks(rotation=50)
-    plt.savefig(save_path, format='png')
+    plt.xticks(rotation=rotation)
+    plt.savefig(save_path, format=save_format)
     plt.close()

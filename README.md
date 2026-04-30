@@ -1,32 +1,51 @@
 # Northwind Foods
-This repository contains a collection of Python scripts as solutions to a series of exercises on data management, 
-which I completed as part of a course at the Specialisterne Academy. 
+This repository contains a c
 
-## Description
+## Exercise Goal
 The exercises in this project represent a case study based on the Northwind database, a sample database that contains 
 data about a fictional company called Northwind Foods. 
 
 I am assigned the role of a data analyst at Northwind Foods, and have been tasked with analyzing the company's data to
 provide insights and recommendations for improving business operations.
 
-## Getting Started
-### Dependencies
-### Installation
-### Execution Solutions
+Exercises 2 and 4 are not included in this repository. Exercise 2 covered creating the database, and Exercise 4 covered
+accessing the database using Python. These steps were either completed outside this repository or are implicitly
+demonstrated by the solutions to Exercises 5 and 6.
 
-## Project Challenges
-### Data Uncleanliness
-The data in the Northwind database is not perfectly clean, and contains some inconsistencies and errors.
-
-
-## Authors
-- [Mikael Vind Mikkelsen]()
-
-## License
-Not yet specified.
+# See the Solution in Action
+1. Create a PostgreSQL database instance.
+2. 
 
 ## Acknowledgements
-### Specilisterne Academy
-This project was created during my time in the Specialisterne Academy three-month program (February 2 – April 26), 
-as part of the Data Management track. I am grateful for the structured learning environment, feedback, and
-collaborative setting that made this project possible.
+[<img src="docs/Specialisterne%20Logo.jpg" width="450">](https://dk.specialisterne.com/)
+
+This project was developed while I was participating in the Specialisterne Academy as part of the Data Management track 
+(February 2 to April 30, 2026).
+
+Specialisterne is an organization that creates job opportunities for people with autism and similar challenges. Through 
+training, support, and guidance for employers on workplace inclusion, it helps individuals strengthen their skills and 
+find meaningful employment in the tech industry.
+
+I am grateful for the structured learning environment, valuable feedback, and collaborative atmosphere that helped make 
+this project possible.
+
+## See Also
+
+### Specialisterne Academy Projects
+- [Calculator](https://github.com/MikaelVM/Calculator) A simple calculator application built using Python, 
+demonstrating basic programming concepts and CLI design.
+- [Data Handling](https://github.com/MikaelVM/data-handling) A series of exercises focused on data manipulation and
+analysis using Python.
+- [Northwind Database](https://github.com/MikaelVM/northwind-foods) A project centered around the Northwind dataset, 
+where i took the role of a data analyst to generate insights from the data.
+- [Security Database](https://github.com/MikaelVM/security-db) A project focused on PostgreSQL role management and 
+database security, demonstrating the implementation of various user roles with specific privileges.
+- [Environment Database](https://github.com/MikaelVM/environment-data) A project focused on the ETL process of 
+processing environment data from a public DMI API.
+- [ETL Pipeline](https://github.com/MikaelVM/etl-pipeline) A full stack project utilizing the DMI weather data from the 
+Environment Database project, with a focus on a more complete ETL pipeline, Docker-based initialization and 
+a CLI for running the pipeline.
+
+## License
+This project is licensed under the MIT License - see the [LICENSE](docs/LICENSE.txt) file for details.
+project possible.
